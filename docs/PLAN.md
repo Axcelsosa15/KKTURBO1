@@ -112,21 +112,30 @@ etiquetadas manualmente. Debe incluir a propósito los cuatro casos difíciles:
 - Engañosas pero técnicamente ciertas (el caso más duro; ver Riesgos).
 - Sin evidencia pública disponible.
 
-Formato: `eval/claims.jsonl`, un objeto por línea, con `texto`,
-`etiqueta_humana`, `fuente_url`, `notas`.
+Formato: `eval/extraccion.jsonl`, un documento anotado por línea. El esquema
+exacto y el procedimiento están en `eval/README.md`.
 
-**Criterio de salida**: 50 afirmaciones etiquetadas, con al menos 10 de cada
+**Criterio de salida**: 50 documentos anotados, con al menos 10 de cada
 categoría difícil.
+
+**Estado**: el repositorio trae una semilla sintética de 8 casos que ejercita el
+arnés y enseña el formato. No mide nada: hay que reemplazarla por documentos
+reales.
 
 ### Fase 1 — Extracción de afirmaciones
 
-CLI: texto por stdin o archivo -> JSON de claims.
+**Estado: implementada.** `evidencia extraer` acepta texto por stdin o archivo
+y emite markdown o JSON. El arnés de métricas es `evidencia evaluar`.
 
 **Criterio de salida**, medido contra el set de Fase 0:
 - Se extraen >= 80% de las afirmaciones verificables que un humano identifica.
 - < 10% de opiniones/predicciones clasificadas erróneamente como hecho.
 - 100% de los `span_original` existen literalmente en el texto de entrada
   (verificable por código, no por juicio).
+
+Los tres los mide `evidencia evaluar`, que devuelve código de salida 1 si
+alguno falla. El tercero se comprueba afirmación por afirmación contrastando
+`texto[inicio:fin]` con la cita guardada.
 
 ### Fase 2 — Recuperación de evidencia
 
@@ -195,5 +204,7 @@ Se asume lo siguiente para poder avanzar; cualquiera es revisable:
 - **Modelo**: API de Claude para extracción y postura.
 - **Búsqueda**: pendiente de elegir proveedor (Brave / Tavily / SerpAPI u otro).
   Se aisla tras una interfaz para poder cambiarlo sin tocar el resto.
+- **Modelo**: `claude-opus-5` con razonamiento adaptativo y salida estructurada.
+  El proveedor vive tras un `Protocol`, así que cambiarlo no toca el pipeline.
 - **Idioma de entrada**: español e inglés.
 - **Ejecución**: local, sin base de datos al inicio (archivos JSON + caché).
